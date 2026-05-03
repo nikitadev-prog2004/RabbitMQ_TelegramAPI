@@ -1,0 +1,75 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    hostname: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ['CMD', 'rabbitmq-diagnostics', '-q', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    ports:
+      - '6379:6379'
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  telegram:
+    build:
+      context: .
+      dockerfile: docker/telegram.Dockerfile
+    environment:
+      TELEGRAM_PORT: 3003
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+    ports:
+      - '3003:3003'
+    restart: unless-stopped
+
+  producer:
+    build:
+      context: .
+      dockerfile: docker/producer.Dockerfile
+    environment:
+      PRODUCER_PORT: 3001
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_QUEUE: notification_events
+    ports:
+      - '3001:3001'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  consumer:
+    build:
+      context: .
+      dockerfile: docker/consumer.Dockerfile
+    environment:
+      HTTP_PORT: 3002
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      RABBITMQ_QUEUE: notification_events
+      TELEGRAM_SERVICE_URL: http://telegram:3003
+      CONSUMER_MAX_RETRIES: 5
+      REDIS_URL: redis://redis:6379
+    ports:
+      - '3002:3002'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      telegram:
+        condition: service_started
+    restart: unless-stopped

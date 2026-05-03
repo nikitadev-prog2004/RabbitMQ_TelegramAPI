@@ -1,0 +1,1 @@
+export const EVENT_PUBLISHER_PORT = Symbol('EVENT_PUBLISHER_PORT');

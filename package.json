@@ -1,0 +1,24 @@
+{
+  "name": "notification-microservices",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @notification/contracts && npm run build -w @notification/producer && npm run build -w @notification/consumer && npm run build -w @notification/telegram",
+    "build:contracts": "npm run build -w @notification/contracts",
+    "build:producer": "npm run build -w @notification/producer",
+    "build:consumer": "npm run build -w @notification/consumer",
+    "build:telegram": "npm run build -w @notification/telegram",
+    "start:producer": "npm run start:prod -w @notification/producer",
+    "start:consumer": "npm run start:prod -w @notification/consumer",
+    "start:telegram": "npm run start:prod -w @notification/telegram",
+    "test": "npm run test --workspaces --if-present",
+    "test:e2e": "npm run test:e2e --workspaces --if-present",
+    "test:integration": "npm run test:integration -w @notification/consumer"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

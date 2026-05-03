@@ -1,0 +1,2 @@
+export const IDEMPOTENCY_PORT = Symbol('IDEMPOTENCY_PORT');
+export const TELEGRAM_SENDER_PORT = Symbol('TELEGRAM_SENDER_PORT');
